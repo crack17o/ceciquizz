@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - CeciQuizz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <i class="fas fa-feather-pointed nav-icon"></i>
+            <span class="logo">CeciQuizz</span>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="login.html" class="nav-link" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
+        </div>
+    </nav>
+    <main>
+        <section class="quiz-section" id="quiz-section">
+            <div class="quiz-header">
+                <div class="progress-bar-bg">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="timer" id="timer">1:30</div>
+                <div class="score-live"><i class="fas fa-star"></i> <span id="score">0</span>/8</div>
+            </div>
+            <div class="quiz-body" id="quiz-body">
+                <!-- Question et assertions ici -->
+            </div>
+        </section>
+        <section class="quiz-result" id="quiz-result" style="display:none;">
+            <div class="result-circle">
+                <svg width="120" height="120">
+                    <circle cx="60" cy="60" r="54" stroke="#e9ecef" stroke-width="12" fill="none"/>
+                    <circle id="result-progress" cx="60" cy="60" r="54" stroke="#58cc02" stroke-width="12" fill="none"
+                        stroke-linecap="round" stroke-dasharray="339.292" stroke-dashoffset="339.292"/>
+                </svg>
+                <div class="result-score" id="result-score">0/8</div>
+            </div>
+            <div class="result-actions">
+                <button class="start-btn" onclick="restartQuiz()">Reprendre</button>
+                <button class="start-btn" id="next-level-btn" style="display:none;" onclick="nextLevel()">Niveau suivant</button>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-content">
+            © 2025 CeciQuizz — Fait avec <i class="fas fa-heart"></i>
+        </div>
+    </footer>
+    <script>
+    // --- CONFIGURATION DES QUESTIONS ---
+    // Exemple : à remplacer par tes vraies questions pour chaque thème/niveau
+    const QUESTIONS = {
+        sport: [
+            [ // Niveau 1
+                { q: "Combien de joueurs dans une équipe de football ?", a: ["9", "10", "11", "12"], correct: 2 },
+                { q: "Quel sport utilise une raquette ?", a: ["Football", "Tennis", "Rugby", "Boxe"], correct: 1 },
+                { q: "Combien de points pour un panier à 3 points au basket ?", a: ["1", "2", "3", "4"], correct: 2 },
+                { q: "Quel pays a gagné la Coupe du Monde 2018 ?", a: ["Brésil", "France", "Allemagne", "Argentine"], correct: 1 },
+                { q: "Dans quel sport trouve-t-on un 'ace' ?", a: ["Tennis", "Natation", "Cyclisme", "Judo"], correct: 0 },
+                { q: "Combien de joueurs sur un terrain de volley-ball ?", a: ["5", "6", "7", "8"], correct: 1 },
+                { q: "Quel est le surnom de l'équipe de France de rugby ?", a: ["Les Bleus", "Les Tricolores", "Les Coqs", "Les Lions"], correct: 2 },
+                { q: "Quel sport pratique Kylian Mbappé ?", a: ["Basket", "Football", "Tennis", "Handball"], correct: 1 }
+            ],
+            [ // Niveau 2
+                { q: "Combien de temps dure un match de football ?", a: ["60 min", "90 min", "80 min", "100 min"], correct: 1 },
+                { q: "Quel est le recordman du 100m ?", a: ["Usain Bolt", "Carl Lewis", "Asafa Powell", "Justin Gatlin"], correct: 0 },
+                { q: "Quel sport est associé à Serena Williams ?", a: ["Tennis", "Golf", "Natation", "Athlétisme"], correct: 0 },
+                { q: "Combien de joueurs dans une équipe de basket ?", a: ["5", "6", "7", "8"], correct: 0 },
+                { q: "Quel pays a inventé le judo ?", a: ["Chine", "Japon", "Corée", "Thaïlande"], correct: 1 },
+                { q: "Combien de sets pour gagner un match de tennis masculin en Grand Chelem ?", a: ["2", "3", "4", "5"], correct: 3 },
+                { q: "Quel est le sport de Michael Phelps ?", a: ["Natation", "Cyclisme", "Athlétisme", "Boxe"], correct: 0 },
+                { q: "Quel est le surnom de l'équipe nationale brésilienne de football ?", a: ["La Roja", "La Seleção", "Les Bleus", "Les Lions"], correct: 1 }
+            ],
+            [ // Niveau 3
+                { q: "Combien de joueurs sur un terrain de rugby à XV ?", a: ["13", "14", "15", "16"], correct: 2 },
+                { q: "Quel est le sport du Tour de France ?", a: ["Cyclisme", "Athlétisme", "Voile", "Moto"], correct: 0 },
+                { q: "Combien de points pour un essai au rugby ?", a: ["3", "4", "5", "6"], correct: 2 },
+                { q: "Quel est le sport de Novak Djokovic ?", a: ["Tennis", "Football", "Basket", "Golf"], correct: 0 },
+                { q: "Combien de joueurs dans une équipe de handball ?", a: ["5", "6", "7", "8"], correct: 2 },
+                { q: "Quel pays a organisé les JO 2012 ?", a: ["Chine", "Brésil", "Royaume-Uni", "Russie"], correct: 2 },
+                { q: "Quel est le sport de Tiger Woods ?", a: ["Golf", "Tennis", "Basket", "Football"], correct: 0 },
+                { q: "Combien de minutes dure un match de handball ?", a: ["40", "50", "60", "70"], correct: 2 }
+            ]
+        ],
+        geo: [
+            [ // Niveau 1
+                { q: "Quelle est la capitale de la France ?", a: ["Paris", "Lyon", "Marseille", "Toulouse"], correct: 0 },
+                { q: "Quel est le plus grand continent ?", a: ["Afrique", "Europe", "Asie", "Amérique"], correct: 2 },
+                { q: "Quel océan borde l'ouest de l'Afrique ?", a: ["Atlantique", "Indien", "Pacifique", "Arctique"], correct: 0 },
+                { q: "Quelle est la capitale de l'Australie ?", a: ["Sydney", "Melbourne", "Canberra", "Perth"], correct: 2 },
+                { q: "Quel pays a la plus grande population ?", a: ["Inde", "États-Unis", "Chine", "Russie"], correct: 2 },
+                { q: "Quel est le plus long fleuve du monde ?", a: ["Nil", "Amazone", "Yangtsé", "Mississippi"], correct: 1 },
+                { q: "Dans quel pays se trouve le Kilimandjaro ?", a: ["Kenya", "Tanzanie", "Afrique du Sud", "Égypte"], correct: 1 },
+                { q: "Quel est le plus grand désert du monde ?", a: ["Sahara", "Gobi", "Kalahari", "Atacama"], correct: 0 }
+            ],
+            [ // Niveau 2
+                { q: "Quelle mer borde la France au sud ?", a: ["Mer du Nord", "Mer Méditerranée", "Mer Noire", "Mer Rouge"], correct: 1 },
+                { q: "Quel pays a pour capitale Ottawa ?", a: ["Australie", "Canada", "États-Unis", "Mexique"], correct: 1 },
+                { q: "Quel est le plus haut sommet du monde ?", a: ["Mont Blanc", "Everest", "K2", "Kilimandjaro"], correct: 1 },
+                { q: "Quel pays est une île ?", a: ["Brésil", "Japon", "Chine", "Allemagne"], correct: 1 },
+                { q: "Quel fleuve traverse Paris ?", a: ["Thames", "Seine", "Danube", "Rhin"], correct: 1 },
+                { q: "Quel pays est frontalier de la France ?", a: ["Portugal", "Belgique", "Suède", "Grèce"], correct: 1 },
+                { q: "Dans quel pays se trouve la ville de Marrakech ?", a: ["Algérie", "Maroc", "Tunisie", "Égypte"], correct: 1 },
+                { q: "Quel est le plus grand lac d'Afrique ?", a: ["Victoria", "Tanganyika", "Malawi", "Tchad"], correct: 0 }
+            ],
+            [ // Niveau 3
+                { q: "Quel est le pays le plus vaste du monde ?", a: ["Canada", "Chine", "États-Unis", "Russie"], correct: 3 },
+                { q: "Quel est le plus grand archipel du monde ?", a: ["Indonésie", "Philippines", "Japon", "Grèce"], correct: 0 },
+                { q: "Quel est le plus haut volcan d'Europe ?", a: ["Etna", "Vésuve", "Stromboli", "Fuji"], correct: 0 },
+                { q: "Quel pays a pour capitale Oslo ?", a: ["Suède", "Norvège", "Danemark", "Finlande"], correct: 1 },
+                { q: "Quel est le plus grand pays d'Amérique du Sud ?", a: ["Argentine", "Brésil", "Chili", "Pérou"], correct: 1 },
+                { q: "Quel fleuve traverse l'Égypte ?", a: ["Nil", "Congo", "Niger", "Zambèze"], correct: 0 },
+                { q: "Dans quel pays se trouve la ville de Sydney ?", a: ["Australie", "Nouvelle-Zélande", "Canada", "États-Unis"], correct: 0 },
+                { q: "Quel est le plus grand océan du monde ?", a: ["Atlantique", "Indien", "Arctique", "Pacifique"], correct: 3 }
+            ]
+        ],
+        hist: [
+            [ // Niveau 1
+                { q: "Qui était le premier président de la France ?", a: ["Napoléon", "De Gaulle", "Louis XVI", "Louis XVIII"], correct: 1 },
+                { q: "En quelle année a eu lieu la Révolution française ?", a: ["1789", "1815", "1914", "1848"], correct: 0 },
+                { q: "Qui a découvert l'Amérique ?", a: ["Magellan", "Christophe Colomb", "Vasco de Gama", "Marco Polo"], correct: 1 },
+                { q: "Quel roi a fait construire Versailles ?", a: ["Louis XIV", "Louis XVI", "Louis XV", "Louis XIII"], correct: 0 },
+                { q: "Qui était Jeanne d'Arc ?", a: ["Reine", "Guerrière", "Peintre", "Scientifique"], correct: 1 },
+                { q: "En quelle année la 2nde Guerre mondiale a-t-elle commencé ?", a: ["1914", "1939", "1945", "1929"], correct: 1 },
+                { q: "Quel empire a construit le Colisée ?", a: ["Grec", "Romain", "Égyptien", "Chinois"], correct: 1 },
+                { q: "Qui était Cléopâtre ?", a: ["Reine d'Égypte", "Reine de France", "Pharaon", "Impératrice romaine"], correct: 0 }
+            ],
+            [ // Niveau 2
+                { q: "Qui a inventé l'imprimerie ?", a: ["Gutenberg", "Pasteur", "Newton", "Einstein"], correct: 0 },
+                { q: "En quelle année l'homme a-t-il marché sur la Lune ?", a: ["1969", "1972", "1959", "1980"], correct: 0 },
+                { q: "Qui était le chef des nazis ?", a: ["Staline", "Hitler", "Churchill", "Mussolini"], correct: 1 },
+                { q: "Quel pays a aboli l'esclavage en premier ?", a: ["France", "États-Unis", "Angleterre", "Brésil"], correct: 2 },
+                { q: "Qui a peint la Joconde ?", a: ["Michel-Ange", "Raphaël", "Léonard de Vinci", "Rembrandt"], correct: 2 },
+                { q: "Quel événement a eu lieu en 1492 ?", a: ["Chute de Rome", "Découverte de l'Amérique", "Révolution française", "Guerre de Cent Ans"], correct: 1 },
+                { q: "Qui était Charlemagne ?", a: ["Empereur", "Roi", "Pape", "Philosophe"], correct: 0 },
+                { q: "Quel mur est tombé en 1989 ?", a: ["Mur de Berlin", "Mur de Chine", "Mur d'Hadrien", "Mur des Lamentations"], correct: 0 }
+            ],
+            [ // Niveau 3
+                { q: "Qui a écrit 'Le Prince' ?", a: ["Machiavel", "Platon", "Aristote", "Descartes"], correct: 0 },
+                { q: "En quelle année a eu lieu la chute de l'Empire romain d'Occident ?", a: ["476", "1492", "1066", "1789"], correct: 0 },
+                { q: "Qui était Ramsès II ?", a: ["Pharaon", "Empereur", "Roi", "Pape"], correct: 0 },
+                { q: "Quel roi fut guillotiné en 1793 ?", a: ["Louis XIV", "Louis XVI", "Louis XVIII", "Charles X"], correct: 1 },
+                { q: "Qui a mené la Révolution russe ?", a: ["Lénine", "Staline", "Trotski", "Gorbatchev"], correct: 0 },
+                { q: "Quel traité a mis fin à la Première Guerre mondiale ?", a: ["Versailles", "Tordesillas", "Vienne", "Paris"], correct: 0 },
+                { q: "Qui a inventé la vaccination ?", a: ["Pasteur", "Curie", "Einstein", "Newton"], correct: 0 },
+                { q: "Qui était Socrate ?", a: ["Philosophe", "Roi", "Général", "Peintre"], correct: 0 }
+            ]
+        ],
+        info: [
+            [ // Niveau 1
+                { q: "Que signifie HTML ?", a: ["HyperText Markup Language", "HighText Machine Language", "HyperTabular Markup Language", "None"], correct: 0 },
+                { q: "Quel langage est utilisé pour le style des pages web ?", a: ["HTML", "Python", "CSS", "Java"], correct: 2 },
+                { q: "Quel est le langage de programmation de base du web ?", a: ["Java", "C++", "JavaScript", "Python"], correct: 2 },
+                { q: "Que signifie CPU ?", a: ["Central Processing Unit", "Computer Personal Unit", "Central Print Unit", "Control Processing Unit"], correct: 0 },
+                { q: "Quel composant stocke les données temporairement ?", a: ["RAM", "ROM", "CPU", "GPU"], correct: 0 },
+                { q: "Quel est le système d'exploitation de Microsoft ?", a: ["Linux", "Windows", "MacOS", "Android"], correct: 1 },
+                { q: "Quel langage est principalement utilisé pour les bases de données ?", a: ["SQL", "HTML", "CSS", "PHP"], correct: 0 },
+                { q: "Que signifie 'bug' en informatique ?", a: ["Erreur", "Virus", "Programme", "Ordinateur"], correct: 0 }
+            ],
+            [ // Niveau 2
+                { q: "Que signifie CSS ?", a: ["Cascading Style Sheets", "Computer Style Sheets", "Creative Style System", "Colorful Style Sheets"], correct: 0 },
+                { q: "Quel langage permet d'ajouter de l'interactivité à une page web ?", a: ["HTML", "CSS", "JavaScript", "SQL"], correct: 2 },
+                { q: "Quel est le langage de requête pour les bases de données ?", a: ["SQL", "Python", "Java", "C++"], correct: 0 },
+                { q: "Que signifie RAM ?", a: ["Random Access Memory", "Read Access Memory", "Run Access Memory", "Random Actual Memory"], correct: 0 },
+                { q: "Quel est le navigateur de Google ?", a: ["Edge", "Firefox", "Chrome", "Safari"], correct: 2 },
+                { q: "Quel langage est utilisé côté serveur ?", a: ["JavaScript", "PHP", "HTML", "CSS"], correct: 1 },
+                { q: "Quel est le système d'exploitation libre le plus connu ?", a: ["Windows", "Linux", "MacOS", "Android"], correct: 1 },
+                { q: "Que signifie URL ?", a: ["Uniform Resource Locator", "Universal Resource Link", "Uniform Reference Link", "Universal Reference Locator"], correct: 0 }
+            ],
+            [ // Niveau 3
+                { q: "Quel langage est utilisé pour l'intelligence artificielle ?", a: ["Python", "HTML", "CSS", "PHP"], correct: 0 },
+                { q: "Que signifie API ?", a: ["Application Programming Interface", "Advanced Programming Interface", "Application Program Internet", "Advanced Program Interface"], correct: 0 },
+                { q: "Quel est le langage de programmation d'Android ?", a: ["Java", "Swift", "C#", "Ruby"], correct: 0 },
+                { q: "Que signifie HTTP ?", a: ["HyperText Transfer Protocol", "HighText Transfer Protocol", "HyperTabular Transfer Protocol", "HyperText Translate Protocol"], correct: 0 },
+                { q: "Quel langage est utilisé pour le machine learning ?", a: ["Python", "HTML", "CSS", "JavaScript"], correct: 0 },
+                { q: "Quel est le créateur de Microsoft ?", a: ["Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Elon Musk"], correct: 1 },
+                { q: "Quel langage est utilisé pour les scripts système sous Linux ?", a: ["Bash", "Python", "Java", "PHP"], correct: 0 },
+                { q: "Que signifie SQL ?", a: ["Structured Query Language", "Simple Query Language", "Structured Question Language", "System Query Language"], correct: 0 }
+            ]
+        ]
+    };
+
+    // --- INITIALISATION ---
+    const theme = localStorage.getItem('ceciquizz_theme') || 'sport';
+    const level = parseInt(localStorage.getItem('ceciquizz_level') || '0', 10);
+    const questions = QUESTIONS[theme][level] || [];
+    let current = 0, score = 0, timer = 90, interval = null, answered = false;
+
+    function startQuiz() {
+        current = 0; score = 0; timer = 90; answered = false;
+        document.getElementById('score').textContent = score;
+        document.getElementById('quiz-section').style.display = '';
+        document.getElementById('quiz-result').style.display = 'none';
+        updateProgressBar();
+        showQuestion();
+        startTimer();
+    }
+
+    function showQuestion() {
+        if (current >= questions.length) return showResult();
+        const q = questions[current];
+        let html = `<div class="quiz-question">${q.q}</div><div class="quiz-answers">`;
+        q.a.forEach((ans, i) => {
+            html += `<button class="quiz-assertion" onclick="chooseAnswer(${i})">${ans}</button>`;
+        });
+        html += `</div>`;
+        document.getElementById('quiz-body').innerHTML = html;
+        answered = false;
+    }
+
+    window.chooseAnswer = function(idx) {
+        if (answered) return;
+        answered = true;
+        const q = questions[current];
+        const buttons = document.querySelectorAll('.quiz-assertion');
+        buttons.forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === q.correct) btn.classList.add('good');
+            if (i === idx && i !== q.correct) btn.classList.add('bad');
+        });
+        if (idx === q.correct) {
+            score++;
+            document.getElementById('score').textContent = score;
+            document.querySelector('.quiz-question').classList.add('animate-correct');
+        } else {
+            document.querySelector('.quiz-question').classList.add('animate-wrong');
+        }
+        setTimeout(() => {
+            document.querySelector('.quiz-question').classList.remove('animate-correct', 'animate-wrong');
+            current++;
+            updateProgressBar();
+            showQuestion();
+        }, 900);
+    };
+
+    function updateProgressBar() {
+        const percent = Math.min(100, Math.round((current / questions.length) * 100));
+        document.getElementById('progress-bar').style.width = percent + '%';
+    }
+
+    function startTimer() {
+        document.getElementById('timer').textContent = "1:30";
+        let t = timer;
+        interval = setInterval(() => {
+            t--;
+            const min = Math.floor(t / 60);
+            const sec = t % 60;
+            document.getElementById('timer').textContent = `${min}:${sec < 10 ? '0' : ''}${sec}`;
+            if (t <= 0) {
+                clearInterval(interval);
+                showResult();
+            }
+        }, 1000);
+    }
+
+    function showResult() {
+        clearInterval(interval);
+        document.getElementById('quiz-section').style.display = 'none';
+        document.getElementById('quiz-result').style.display = '';
+        // Progress bar circulaire
+        const percent = Math.min(100, Math.round((score / questions.length) * 100));
+        const circle = document.getElementById('result-progress');
+        const radius = 54;
+        const circumference = 2 * Math.PI * radius;
+        circle.style.strokeDasharray = circumference;
+        circle.style.strokeDashoffset = circumference - (percent / 100) * circumference;
+        document.getElementById('result-score').textContent = `${score}/${questions.length}`;
+        // Affiche bouton "Niveau suivant" si score >= 4
+        document.getElementById('next-level-btn').style.display = (score >= 4 && level < 2) ? '' : 'none';
+        // Sauvegarde le score dans le localStorage
+        let scores = JSON.parse(localStorage.getItem('ceciquizz_scores') || '{}');
+        if (!scores[theme]) scores[theme] = [];
+        scores[theme][level] = score;
+        localStorage.setItem('ceciquizz_scores', JSON.stringify(scores));
+
+        // --- Sauvegarde le score PAR UTILISATEUR ---
+        const user = localStorage.getItem('ceciquizz_user');
+        let allScores = JSON.parse(localStorage.getItem('ceciquizz_all_scores') || '{}');
+        if (!allScores[user]) allScores[user] = {};
+        if (!allScores[user][theme]) allScores[user][theme] = [];
+        allScores[user][theme][level] = score;
+        localStorage.setItem('ceciquizz_all_scores', JSON.stringify(allScores));
+    }
+
+    function restartQuiz() {
+        startQuiz();
+    }
+
+    function nextLevel() {
+        localStorage.setItem('ceciquizz_level', level + 1);
+        window.location.href = 'quiz.html';
+    }
+
+    // Lancement initial
+    startQuiz();
+
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        localStorage.removeItem('ceciquizz_user');
+        localStorage.removeItem('ceciquizz_pass');
+        // On NE supprime PAS ceci quizz_all_scores pour garder les scores des autres utilisateurs
+        window.location.href = 'login.html';
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niveaux du quiz - CeciQuizz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <i class="fas fa-feather-pointed nav-icon"></i>
+            <span class="logo">CeciQuizz</span>
+        </div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a>
+            <a href="login.html" class="nav-link" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
+        </div>
+    </nav>
+    <main>
+        <section class="levels-section">
+            <h1 id="category-title"></h1>
+            <div class="levels-list" id="levels-list">
+                <!-- Les niveaux seront générés ici -->
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-content">
+            © 2025 CeciQuizz — Fait avec <i class="fas fa-heart"></i>
+        </div>
+    </footer>
+    <script>
+    // Catégories et icônes
+    const categories = {
+        sport: { label: "Sport", icon: "fas fa-futbol" },
+        geo: { label: "Géographie", icon: "fas fa-globe-europe" },
+        hist: { label: "Histoire", icon: "fas fa-landmark" },
+        info: { label: "Informatique", icon: "fas fa-laptop-code" }
+    };
+
+    // Récupère la catégorie choisie
+    const theme = localStorage.getItem('ceciquizz_theme');
+    const cat = categories[theme] || { label: "Quiz", icon: "fas fa-question" };
+    document.getElementById('category-title').innerHTML = `<i class="${cat.icon}"></i> ${cat.label} — Choisis ton niveau`;
+
+    // Gestion des scores par niveau (exemple : {sport: [5, 7, 8]})
+    const user = localStorage.getItem('ceciquizz_user');
+    const allScores = JSON.parse(localStorage.getItem('ceciquizz_all_scores') || '{}');
+    const scores = allScores[user] || {};
+    const levels = 3; // nombre de niveaux
+    const questionsPerLevel = 8;
+    const minPoints = Math.ceil(questionsPerLevel / 2); // 4 pour 8 questions
+
+    function isLevelUnlocked(theme, level) {
+        if (level === 0) return true;
+        const prevScore = (scores[theme] && scores[theme][level - 1]) || 0;
+        return prevScore >= minPoints;
+    }
+
+    function renderLevels() {
+        const container = document.getElementById('levels-list');
+        container.innerHTML = '';
+        for (let i = 0; i < levels; i++) {
+            const unlocked = isLevelUnlocked(theme, i);
+            const userScore = (scores[theme] && scores[theme][i]) || 0;
+            const validated = userScore >= minPoints;
+            const levelDiv = document.createElement('div');
+            levelDiv.className = 'level-card' + (unlocked ? '' : ' locked') + (validated ? ' validated' : '');
+            levelDiv.innerHTML = `
+                <div class="level-header">
+                    <span class="level-num">Niveau ${i + 1}</span>
+                    ${validated ? '<i class="fas fa-check-circle"></i>' : ''}
+                    ${!unlocked ? '<i class="fas fa-lock"></i>' : ''}
+                </div>
+                <div class="level-info">
+                    <span>${userScore} / ${questionsPerLevel} pts</span>
+                    <button class="start-btn" ${unlocked ? '' : 'disabled'} onclick="startLevel(${i})">Jouer</button>
+                </div>
+            `;
+            container.appendChild(levelDiv);
+        }
+    }
+
+    window.startLevel = function(level) {
+        // Stocke le niveau choisi et redirige vers la page de quiz
+        localStorage.setItem('ceciquizz_level', level);
+        window.location.href = 'quiz.html';
+    };
+
+    renderLevels();
+
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        localStorage.removeItem('ceciquizz_user');
+        localStorage.removeItem('ceciquizz_pass');
+        // On NE supprime PAS ceci quizz_all_scores pour garder les scores des autres utilisateurs
+        window.location.href = 'login.html';
+    });
+    </script>
+</body>
+</html>

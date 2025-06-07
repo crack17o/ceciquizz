@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - CeciQuizz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <i class="fas fa-feather-pointed nav-icon"></i>
+            <span class="logo">CeciQuizz</span>
+        </div>
+        <div class="nav-links">
+            <a href="login.html" class="nav-link"><i class="fas fa-sign-in-alt"></i> <span>Se connecter</span></a>
+            <a href="index.html" class="nav-link"><i class="fas fa-info-circle"></i> <span>Accueil</span></a>
+        </div>
+    </nav>
+    <main>
+        <div class="login-container">
+            <h2><i class="fas fa-user-plus"></i> Inscription</h2>
+            <form id="register-form">
+                <div class="input-group">
+                    <label for="register-username">Nom d'utilisateur</label>
+                    <input type="text" id="register-username" required autocomplete="username">
+                </div>
+                <div class="input-group">
+                    <label for="register-password">Mot de passe</label>
+                    <input type="password" id="register-password" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="start-btn">S'inscrire</button>
+            </form>
+            <p class="form-link">Déjà un compte ? <a href="login.html">Connecte-toi ici</a></p>
+        </div>
+        <div id="popup" class="popup"><span class="popup-icon"></span><span class="popup-message"></span></div>
+    </main>
+    <footer>
+        <div class="footer-content">
+            © 2025 CeciQuizz — Fait avec <i class="fas fa-heart"></i>
+        </div>
+    </footer>
+    <script>
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('register-username').value.trim();
+        const password = document.getElementById('register-password').value;
+
+        if(username.length < 3 || password.length < 3) {
+            showPopup("Nom d'utilisateur et mot de passe doivent faire au moins 3 caractères.", false);
+            return;
+        }
+
+        // Vérifie si l'utilisateur existe déjà
+        const existingUser = localStorage.getItem('ceciquizz_user');
+        if(existingUser && existingUser === username) {
+            showPopup("Ce nom d'utilisateur existe déjà.", false);
+            return;
+        }
+
+        localStorage.setItem('ceciquizz_user', username);
+        localStorage.setItem('ceciquizz_pass', password);
+        showPopup("Inscription réussie ! Redirection...", true);
+        setTimeout(() => window.location.href = 'login.html', 1500);
+    });
+
+    function showPopup(message, success) {
+        const popup = document.getElementById('popup');
+        const icon = popup.querySelector('.popup-icon');
+        const msg = popup.querySelector('.popup-message');
+        msg.textContent = message;
+        if (success) {
+            icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            popup.className = 'popup success';
+        } else {
+            icon.innerHTML = '<i class="fas fa-times-circle"></i>';
+            popup.className = 'popup error';
+        }
+        // Affiche le fond flou
+        document.body.classList.add('popup-open');
+        popup.style.display = 'flex';
+        setTimeout(() => {
+            popup.style.display = 'none';
+            document.body.classList.remove('popup-open');
+        }, 2000);
+    }
+    </script>
+</body>
+</html>

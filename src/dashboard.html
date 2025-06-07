@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CeciQuizz</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-left">
+            <i class="fas fa-feather-pointed nav-icon"></i>
+            <span class="logo">CeciQuizz</span>
+        </div>
+        <div class="nav-links">
+            <a href="login.html" class="nav-link" id="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Déconnexion</span></a>
+        </div>
+    </nav>
+    <main>
+        <section class="dashboard-hero">
+            <h1 id="welcome-msg">Coucou !</h1>
+            <div class="dashboard-progress">
+                <h2>Ta progression</h2>
+                <div class="progress-list">
+                    <div class="progress-item">
+                        <i class="fas fa-futbol theme-icon"></i>
+                        <span>Sport</span>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar" id="progress-sport"></div>
+                        </div>
+                        <span class="score" id="score-sport">0 pts</span>
+                    </div>
+                    <div class="progress-item">
+                        <i class="fas fa-globe-europe theme-icon"></i>
+                        <span>Géographie</span>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar" id="progress-geo"></div>
+                        </div>
+                        <span class="score" id="score-geo">0 pts</span>
+                    </div>
+                    <div class="progress-item">
+                        <i class="fas fa-landmark theme-icon"></i>
+                        <span>Histoire</span>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar" id="progress-hist"></div>
+                        </div>
+                        <span class="score" id="score-hist">0 pts</span>
+                    </div>
+                    <div class="progress-item">
+                        <i class="fas fa-laptop-code theme-icon"></i>
+                        <span>Informatique</span>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar" id="progress-info"></div>
+                        </div>
+                        <span class="score" id="score-info">0 pts</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="dashboard-themes">
+            <h2>Commencer un quiz</h2>
+            <div class="theme-list">
+                <div class="theme" onclick="startQuiz('sport')">
+                    <i class="fas fa-futbol theme-icon"></i>
+                    <h3>Sport</h3>
+                </div>
+                <div class="theme" onclick="startQuiz('geo')">
+                    <i class="fas fa-globe-europe theme-icon"></i>
+                    <h3>Géographie</h3>
+                </div>
+                <div class="theme" onclick="startQuiz('hist')">
+                    <i class="fas fa-landmark theme-icon"></i>
+                    <h3>Histoire</h3>
+                </div>
+                <div class="theme" onclick="startQuiz('info')">
+                    <i class="fas fa-laptop-code theme-icon"></i>
+                    <h3>Informatique</h3>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-content">
+            © 2025 CeciQuizz — Fait avec <i class="fas fa-heart"></i>
+        </div>
+    </footer>
+    <script>
+    // Affiche le nom de l'utilisateur
+    const user = localStorage.getItem('ceciquizz_user') || '';
+    document.getElementById('welcome-msg').textContent = user ? `Coucou ${user} !` : 'Coucou !';
+
+    // Récupère les scores de l'utilisateur courant
+    const allScores = JSON.parse(localStorage.getItem('ceciquizz_all_scores') || '{}');
+    const scores = allScores[user] || {};
+    const maxScore = 24; // 8 questions x 3 niveaux
+
+    function setProgress(theme, themeScores) {
+        let total = 0;
+        if (Array.isArray(themeScores)) {
+            total = themeScores.reduce((a, b) => a + (b || 0), 0);
+        }
+        document.getElementById('score-' + theme).textContent = (total || 0) + ' pts';
+        const percent = Math.min(100, Math.round((total || 0) / maxScore * 100));
+        document.getElementById('progress-' + theme).style.width = percent + '%';
+    }
+    setProgress('sport', scores.sport);
+    setProgress('geo', scores.geo);
+    setProgress('hist', scores.hist);
+    setProgress('info', scores.info);
+
+    // Clique sur une thématique
+    function startQuiz(theme) {
+        // Stocke le thème choisi et redirige vers la page de niveaux
+        localStorage.setItem('ceciquizz_theme', theme);
+        window.location.href = 'quiz-levels.html';
+    }
+
+    // Déconnexion
+    document.getElementById('logout-btn').addEventListener('click', function(e) {
+        localStorage.removeItem('ceciquizz_user');
+        localStorage.removeItem('ceciquizz_pass');
+        // On NE supprime PAS ceci quizz_all_scores pour garder les scores des autres utilisateurs
+        window.location.href = 'login.html';
+    });
+    </script>
+</body>
+</html>
