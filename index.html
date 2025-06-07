@@ -24,7 +24,7 @@
         <div class="hero">
             <h1>Apprends et Joue</h1>
             <p>Maîtrise de nouveaux sujets grâce à des quiz ludiques !</p>
-            <button class="start-btn">Commencer</button>
+            <button class="start-btn" id="start-btn">Commencer</button>
         </div>
     </header>
     
@@ -74,5 +74,10 @@
         </div>
     </footer>
     <script src="scripts/main.js"></script>
+    <script>
+        document.getElementById('start-btn').addEventListener('click', function() {
+            window.location.href = 'login.html';
+        });
+    </script>
 </body>
 </html>
